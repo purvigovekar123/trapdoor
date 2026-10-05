@@ -1,38 +1,408 @@
-trapdoor/
-│
-├── frontend/
-│   ├── index.html
-│   ├── css/
-│   ├── js/
-│   └── assets/
-│
-├── backend/
-│   ├── app.py
-│   ├── routes/
-│   ├── services/
-│   └── utils/
-│
-├── detection/
-│   ├── url_analyzer.py
-│   ├── message_analyzer.py
-│   ├── risk_engine.py
-│   └── ai_analyzer.py
-│
-├── qr/
-│   └── qr_scanner.py
-│
-├── datasets/
-│   ├── README.md
-│   └── samples/
-│
-├── tests/
-│
-├── docs/
-│   ├── architecture.md
-│   └── screenshots/
-│
-├── .gitignore
-├── LICENSE
-├── README.md
-├── requirements.txt
-└── .env.example
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Trapdoor - Digital Threat Scanner</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0b1020;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            letter-spacing: 3px;
+        }
+
+        .header p {
+            margin-top: 10px;
+            color: #aeb7cc;
+            font-size: 18px;
+        }
+
+        .scanner {
+            background: #151c32;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #293452;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #242d48;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #4f7cff;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #36415f;
+            background: #0d1427;
+            color: white;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #4f7cff;
+        }
+
+        .scan-button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #4f7cff;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .scan-button:hover {
+            opacity: 0.9;
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #10182d;
+            border-radius: 12px;
+            border: 1px solid #293452;
+        }
+
+        .result h2 {
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .risk-level {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result ul {
+            margin-top: 10px;
+            padding-left: 25px;
+        }
+
+        .result li {
+            margin-bottom: 8px;
+            color: #d7dced;
+        }
+
+        .recommendation {
+            margin-top: 20px;
+            padding: 15px;
+            background: #19233d;
+            border-radius: 8px;
+        }
+
+        .error {
+            color: #ff7777;
+            margin-top: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #737e99;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>TRAPDOOR</h1>
+            <p>Digital Threat Scanner</p>
+            <p>Analyze suspicious URLs and messages using explainable risk indicators.</p>
+        </div>
+
+        <div class="scanner">
+
+            <div class="tabs">
+
+                <button class="tab active" onclick="selectType('url', this)">
+                    🔗 URL
+                </button>
+
+                <button class="tab" onclick="selectType('message', this)">
+                    💬 MESSAGE
+                </button>
+
+            </div>
+
+            <textarea
+                id="inputText"
+                placeholder="Enter a suspicious URL here..."
+            ></textarea>
+
+            <button class="scan-button" onclick="scanInput()">
+                🔍 SCAN FOR THREATS
+            </button>
+
+            <div id="error" class="error"></div>
+
+            <div id="result" class="result">
+
+                <h2>Scan Result</h2>
+
+                <div id="score" class="score">
+                    Risk Score: 0/100
+                </div>
+
+                <div id="riskLevel" class="risk-level">
+                    Risk Level: LOW
+                </div>
+
+                <h3>Why?</h3>
+
+                <ul id="reasons"></ul>
+
+                <div class="recommendation">
+                    <strong>Recommended Action:</strong>
+                    <p id="recommendationText">
+                        No obvious suspicious indicators detected.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer">
+            Trapdoor provides risk assessment based on detected indicators.
+            It does not guarantee that a URL or message is safe or malicious.
+        </div>
+
+    </div>
+
+
+    <script>
+
+        let selectedType = "url";
+
+
+        function selectType(type, button) {
+
+            selectedType = type;
+
+            const buttons = document.querySelectorAll(".tab");
+
+            buttons.forEach(function(btn) {
+                btn.classList.remove("active");
+            });
+
+            button.classList.add("active");
+
+            const input = document.getElementById("inputText");
+
+            if (type === "url") {
+
+                input.placeholder =
+                    "Enter a suspicious URL here...";
+
+            } else {
+
+                input.placeholder =
+                    "Paste a suspicious message here...";
+
+            }
+
+            document.getElementById("result").style.display = "none";
+            document.getElementById("error").textContent = "";
+        }
+
+
+        async function scanInput() {
+
+            const input = document.getElementById("inputText").value.trim();
+
+            const error = document.getElementById("error");
+
+            const resultBox = document.getElementById("result");
+
+            if (!input) {
+
+                error.textContent = "Please enter something to scan.";
+
+                resultBox.style.display = "none";
+
+                return;
+            }
+
+            error.textContent = "";
+
+            try {
+
+                const response = await fetch("/scan", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        type: selectedType,
+                        content: input
+                    })
+
+                });
+
+
+                const data = await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.error || "Something went wrong."
+                    );
+
+                }
+
+
+                document.getElementById("score").textContent =
+                    "Risk Score: " + data.risk_score + "/100";
+
+
+                document.getElementById("riskLevel").textContent =
+                    "Risk Level: " + data.risk_level;
+                    const riskElement = document.getElementById("riskLevel");
+
+    riskElement.classList.remove(
+    "risk-low",
+    "risk-medium",
+    "risk-high"
+);
+
+if (data.risk_level === "HIGH") {
+    riskElement.classList.add("risk-high");
+} else if (data.risk_level === "MEDIUM") {
+    riskElement.classList.add("risk-medium");
+} else {
+    riskElement.classList.add("risk-low");
+}
+
+
+                const reasonsList =
+                    document.getElementById("reasons");
+
+                reasonsList.innerHTML = "";
+
+
+                if (data.reasons && data.reasons.length > 0) {
+
+                    data.reasons.forEach(function(reason) {
+
+                        const li = document.createElement("li");
+
+                        li.textContent = reason;
+
+                        reasonsList.appendChild(li);
+
+                    });
+
+                } else {
+
+                    const li = document.createElement("li");
+
+                    li.textContent =
+                        "No obvious suspicious indicators detected.";
+
+                    reasonsList.appendChild(li);
+
+                }
+
+
+                if (data.risk_level === "HIGH") {
+
+                    document.getElementById("recommendationText").textContent =
+                        "Do not click links or provide sensitive information. Verify the source through an official channel.";
+
+                } else if (data.risk_level === "MEDIUM") {
+
+                    document.getElementById("recommendationText").textContent =
+                        "Be cautious. Verify the sender and destination before taking action.";
+
+                } else {
+
+                    document.getElementById("recommendationText").textContent =
+                        "No obvious suspicious indicators were detected, but always verify unexpected requests.";
+
+                }
+
+
+                resultBox.style.display = "block";
+
+            } catch (error) {
+
+                document.getElementById("error").textContent =
+                    error.message;
+
+                resultBox.style.display = "none";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
