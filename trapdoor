@@ -1,0 +1,38 @@
+trapdoor/
+│
+├── frontend/
+│   ├── index.html
+│   ├── css/
+│   ├── js/
+│   └── assets/
+│
+├── backend/
+│   ├── app.py
+│   ├── routes/
+│   ├── services/
+│   └── utils/
+│
+├── detection/
+│   ├── url_analyzer.py
+│   ├── message_analyzer.py
+│   ├── risk_engine.py
+│   └── ai_analyzer.py
+│
+├── qr/
+│   └── qr_scanner.py
+│
+├── datasets/
+│   ├── README.md
+│   └── samples/
+│
+├── tests/
+│
+├── docs/
+│   ├── architecture.md
+│   └── screenshots/
+│
+├── .gitignore
+├── LICENSE
+├── README.md
+├── requirements.txt
+└── .env.example
